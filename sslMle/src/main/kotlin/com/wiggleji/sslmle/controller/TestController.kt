@@ -1,6 +1,6 @@
 package com.wiggleji.sslmle.controller
 
-import com.wiggleji.sslmle.client.EchoClient
+import com.wiggleji.sslmle.infra.feign.EchoClient
 import com.wiggleji.sslmle.dto.EchoRequest
 import com.wiggleji.sslmle.dto.EchoResponse
 import mu.KotlinLogging
