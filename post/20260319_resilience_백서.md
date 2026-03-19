@@ -739,6 +739,7 @@ class RedisRateLimiter(private val redis: StringRedisTemplate) {
 
 INCR + EXPIRE를 하나의 Lua 스크립트로 묶어서 atomic하게 실행한다. 어떤 인스턴스에서 호출하든 Redis의 단일 카운터를 공유하므로, 전체 클러스터에서 정확히 quota를 지킬 수 있다.
 
+---
 
 # 결론
 
