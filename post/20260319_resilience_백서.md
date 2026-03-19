@@ -3,14 +3,14 @@
 
 # 무엇을 설명하는가
 
-이번 글에서는 Resilence4j 의 기능을 소개하며 애플리케이션 레벨의 장애 내성(fault tolerance)을 설명한다.
+이번 글에서는 Resilience4j 의 기능을 소개하며 애플리케이션 레벨의 장애 내성(fault tolerance)을 설명한다.
 
-Resilience4j가 제공하는 핵심 5가지 방어 패턴 <br> — **Rate Limiter**, **Bulkhead**, **Circuit Breaker**, **Time Limiter**, **Retry** — 을 순서대로 설명하고, 각각 **요청 생명주기의 어느 시점에 개입하여 방어하는지**, 그리고 실제 운영 환경에서 어떤 상황에 적용 사례를 정리한다.
+Resilience4j가 제공하는 핵심 5가지 방어 패턴 <br> — **Rate Limiter**, **Bulkhead**, **Circuit Breaker**, **Time Limiter**, **Retry** — 을 순서대로 설명하고, 각각 **요청 생명주기의 어느 시점에 개입하여 방어하는지**, 그리고 실제 운영 환경에서 어떤 상황에 적용하는지 사례를 정리한다.
 
 
 # 왜 작성하는가
 
-프로그램 개발을 하다보면, 대부분 독립적인 어플리케이션으로 개발되는 경우는 드물다. 외부 서비스와 협력하거나, 외부 데이터를 가져와야 하는 경우가 필요한 경우가 많으며, 이는 서비스의 목적과 수익성과 직접적으로 연결되는 경우가 많다. (사실 필수라고 할 수 있다)
+프로그램 개발을 하다보면, 대부분 독립적인 어플리케이션으로 개발되는 경우는 드물다. 외부 서비스와 협력하거나, 외부 데이터를 가져와야 하는 경우가 많으며, 이는 서비스의 목적과 수익성과 직접적으로 연결되는 경우가 많다. (사실 필수라고 할 수 있다)
 
 이 외부 서비스 영역은 개발자가 관리할 수 없는 영역이기에, 네트워크 혹은 외부 서비스의 에러에 대응하는건 사실상 불가능하다.
 
@@ -27,7 +27,7 @@ Resilience4j가 제공하는 핵심 5가지 방어 패턴 <br> — **Rate Limite
 <br>
 
 결국 외부 장애를 해결하기보다 우리 서비스의 영향을 최소화하는게 가장 현실적인 방법이다.
-이 중 JVM 의 Resilience4j 의 기능을 통해, 현실에서 생각할 수 있는 비유와 로직을 접근하고 단순한 설정이 아니라 **"어떤 장애 시나리오를 어디까지 허용할 것인가"** 에 대한 결정할 수 있는 사고력을 길러보기 위해 글을 작성한다.
+이 중 JVM 의 Resilience4j 의 기능을 통해, 현실적인 비유를 통해 로직에 접근하고 단순한 설정이 아니라 **"어떤 장애 시나리오를 어디까지 허용할 것인가"** 에 대한 결정할 수 있는 사고력을 길러보기 위해 글을 작성한다.
 
 이 글은 설정 레퍼런스가 아니다. 각 패턴이 **현실의 어떤 문제를 해결하는지**, 조합했을 때 **왜 순서가 중요한지**를 실전 사례 중심으로 풀어쓴다.
 
@@ -305,14 +305,15 @@ class InventoryService {
 }
 
 // ── 방법 1: Annotation — ThreadPool (비동기) ──
-// type = THREADPOOL이면 전용 스레드풀에서 실행. 반드시 CompletableFuture 반환
+// type = THREADPOOL이면 전용 스레드풀에서 실행. 
+// 프록시가 결과를 CompletableFuture로 감싸 반환하므로 내부에서 supplyAsync를 쓸 필요가 없다.
 @Service
 class ReportService {
 
     @Bulkhead(name = "reportService", type = Bulkhead.Type.THREADPOOL)
     @TimeLimiter(name = "reportService")
     fun generate(req: ReportRequest): CompletableFuture<Report> =
-        CompletableFuture.supplyAsync { reportRepository.heavyQuery(req) }
+        CompletableFuture.completedFuture(reportRepository.heavyQuery(req))
 }
 
 // ── 방법 2: Registry 직접 사용 ──
@@ -378,7 +379,7 @@ sliding window 10건 중 5건이 실패하면 실패율 50% >= threshold → OPE
 
 ### <span style="color:#2aa198">시나리오 적용</span>
 
-Circuit Breaker가 **"PG는 지금 죽어있다"는 판단을 내리고 호출 자체를 차단**한다. OPEN 상태에서는 네트워크 호출 없이 수 마이크로초 만에 fallback을 반환한다. 초당 300건의 헛된 재시도가 0건으로 줄어들고, 스레드는 즉시 해방된다.
+Circuit Breaker가 **"PG는 지금 죽어있다"는 판단을 내리고 호출 자체를 차단**한다. OPEN 상태에서는 네트워크 호출 없이 수 마이크로초(μs) 만에 fallback을 반환한다. 초당 100건의 요청이 각각 2회씩 재시도되어 총 300건이 될 상황을 0건으로 줄이고, 스레드는 즉시 해방된다.
 
 `waitDurationInOpenState` 후 HALF-OPEN에서 탐색 호출을 보내 PG 복구 여부를 확인한다. 살아났으면 CLOSED로 자동 복구, 아직이면 다시 OPEN.
 
@@ -534,15 +535,14 @@ resilience4j:
 ```kotlin
 // ── 방법 1: Annotation ──
 // ThreadPool Bulkhead와 세트로 사용. cancelRunningFuture=true이면 Future.cancel(true) 호출
+// THREADPOOL 타입 프록시가 전용 스레드풀에서 실행하므로 supplyAsync 불필요 — completedFuture로 값만 감싼다
 @Service
 class ReportService {
 
     @Bulkhead(name = "reportService", type = Bulkhead.Type.THREADPOOL)
     @TimeLimiter(name = "reportService", fallbackMethod = "reportFallback")
     fun generate(req: ReportRequest): CompletableFuture<Report> =
-        CompletableFuture.supplyAsync {
-            reportRepository.heavyQuery(req)  // 3초 초과 시 cancel
-        }
+        CompletableFuture.completedFuture(reportRepository.heavyQuery(req))
 
     private fun reportFallback(req: ReportRequest, ex: TimeoutException)
         : CompletableFuture<Report> =
@@ -630,7 +630,8 @@ resilience4j:
 
 ```kotlin
 // ── 방법 1: Annotation (CB와 조합) ──
-// Retry가 안쪽 → 재시도 모두 실패한 결과 1개를 CB가 카운트
+// 기본 순서: Retry(바깥) → CB(안쪽). CB가 OPEN이면 CallNotPermittedException → Retry가 재시도
+// 어노테이션 나열 순서는 실행 순서와 무관하다 — *AspectOrder 프로퍼티가 결정한다
 @Service
 class ExternalApiService {
 
@@ -647,7 +648,7 @@ class ExternalApiService {
 }
 
 // ── 방법 2: Registry 직접 사용 — Decorators 함수형 체이닝 ──
-// withCircuitBreaker → withRetry 순서로 감싸면 실행 시 Retry가 안쪽에서 먼저 동작
+// 마지막에 추가한 데코레이터가 가장 바깥을 감싼다 → withRetry가 최외곽, withCB가 내부
 @Service
 class ExternalApiService(
     private val retryRegistry: RetryRegistry,
@@ -673,32 +674,27 @@ class ExternalApiService(
 
 ## 06. 조합 순서
 
-5가지를 개별로 이해했으면, 이제 조합이다. Spring AOP는 어노테이션을 바깥에서 안쪽 순으로 감싼다.
+5가지를 개별로 이해했으면, 이제 조합이다. Resilience4j의 Spring Boot Starter는 기본적으로 아래와 같은 순서로 어노테이션을 중첩(Chained)하여 실행한다.
 
 ![Annotation Order](img/20260319_resilience/resilience_annotation_order.svg)
 
 ```
-RateLimiter → CircuitBreaker → Bulkhead → TimeLimiter → Retry → Method()
- (가장 바깥)                                              (가장 안쪽)
+Retry → CircuitBreaker → RateLimiter → TimeLimiter → Bulkhead → Method()
+(가장 바깥)                                              (가장 안쪽)
 ```
+[공식 문서 참고](https://resilience4j.readme.io/docs/getting-started-3#aspect-order)
 
-```kotlin
-@RateLimiter(name = "api")
-@CircuitBreaker(name = "api", fallbackMethod = "fallback")
-@Bulkhead(name = "api", type = Bulkhead.Type.THREADPOOL)
-@TimeLimiter(name = "api")
-@Retry(name = "api")
-fun callApi(req: ApiRequest): CompletableFuture<ApiResponse> =
-    CompletableFuture.supplyAsync { client.call(req) }
-```
+**왜 이 순서인가? (기본 설정의 개념)**
 
-**왜 이 순서인가?**
+각 패턴이 양파 껍질처럼 메서드를 감싸고 있으며, 요청은 바깥쪽에서 안쪽으로 전달된다.
 
-- **RateLimiter가 가장 바깥**: quota 초과로 차단된 요청은 CB 실패 카운트에 포함되면 안 된다. <br>&nbsp;&nbsp;&nbsp;외부 시스템은 정상인데 우리가 너무 많이 보내서 거부당한 것이므로, CB가 열리는 오동작을 방지한다.
-- **CircuitBreaker가 두 번째**: CB가 OPEN이면 Bulkhead 슬롯을 점유할 필요도, Retry를 시도할 필요도 없다. <br>&nbsp;&nbsp;&nbsp;죽은 서비스에 대한 리소스 소모를 최상단에서 차단한다.
-- **Retry가 가장 안쪽**: 3번 재시도해서 모두 실패한 결과 **1건**만 CB의 sliding window에 기록된다. <br>&nbsp;&nbsp;&nbsp;만약 Retry가 CB 바깥에 있으면, CB가 이미 OPEN으로 차단한 요청을 3번이나 다시 보내는 꼴이 된다.
+1. **Retry (최외곽)**: 전체 과정을 감싼다. 내부에서 어떤 이유(CB 차단, 타임아웃, 예외 등)로 실패하든, 정해진 횟수만큼 **전체 시나리오를 다시 시작**할 수 있는 권한을 가진다. 
+2. **CircuitBreaker**: 서비스의 건강 상태를 체크한다. 이미 서비스가 불능 상태(OPEN)라면, 그 안쪽의 로직(RateLimit, Bulkhead 등)을 수행할 필요도 없이 여기서 바로 차단하여 리소스를 아낀다.
+3. **RateLimiter**: 이번 **개별 시도(Attempt)**를 보낼 쿼터가 있는지 확인한다. 재시도가 발생할 때마다 매번 쿼터를 확인하여 외부 시스템에 가해지는 총 부하를 조절한다.
+4. **TimeLimiter**: 이번 **개별 시도**가 제한 시간 내에 끝나는지 감시한다.
+5. **Bulkhead (최내곽)**: 실제 메서드를 실행하기 직전, 내부 동시성 슬롯을 확보한다. 실행을 위한 실제 리소스(스레드/세마포어)가 있을 때만 최종적으로 메서드를 호출한다.
 
-**순서를 잘못 잡으면 패턴끼리 싸운다.** Retry가 CB 바깥에서 "다시 보내!"를 외치는데 CB가 안쪽에서 "차단!"을 외치면 <br>— Retry는 `CallNotPermittedException`을 받고 또 재시도하고, 또 차단당하고, `maxAttempts`를 전부 소진한 뒤에야 포기한다. 자원 낭비다.
+이 순서는 각 패턴이 서로의 역할을 방해하지 않고 **상호 보완**하도록 설계된 표준이다. 바깥쪽은 "이 요청을 보낼 상황인가?"를 결정하고, 안쪽으로 갈수록 "이 요청을 어떻게 안전하게 실행할 것인가?"에 집중하는 구조다. 이 계층 구조를 이해해야 복합적인 장애 상황에서 시스템이 어떻게 반응할지 예측할 수 있다.
 
 ---
 
