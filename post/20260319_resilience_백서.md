@@ -679,7 +679,7 @@ class ExternalApiService(
 ![Annotation Order](img/20260319_resilience/resilience_annotation_order.svg)
 
 ```
-Retry → CircuitBreaker → RateLimiter → TimeLimiter → Bulkhead → Method()
+Retry ( CircuitBreaker ( RateLimiter ( TimeLimiter ( Bulkhead ( Function ) ) ) ) )
 (가장 바깥)                                              (가장 안쪽)
 ```
 [공식 문서 참고](https://resilience4j.readme.io/docs/getting-started-3#aspect-order)
