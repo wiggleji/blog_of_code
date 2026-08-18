@@ -1,0 +1,27 @@
+"Benchmark","Mode","Threads","Samples","Score","Score Error (99.9%)","Unit","Param: algorithm","Param: nodes"
+"com.wiggleji.hashlab.bench.HashBenchmark.ketamaMd5","avgt",1,5,192.339819,27.384912,"ns/op",,
+"com.wiggleji.hashlab.bench.HashBenchmark.murmur3_64","avgt",1,5,32.960566,3.151548,"ns/op",,
+"com.wiggleji.hashlab.bench.RouteBenchmark.route","avgt",1,5,62.969727,5.161256,"ns/op",ring_v160,10
+"com.wiggleji.hashlab.bench.RouteBenchmark.route","avgt",1,5,93.208997,15.904869,"ns/op",ring_v160,100
+"com.wiggleji.hashlab.bench.RouteBenchmark.route","avgt",1,5,143.762090,26.801931,"ns/op",ring_v160,1000
+"com.wiggleji.hashlab.bench.RouteBenchmark.route","avgt",1,5,85.813182,8.138284,"ns/op",ring_v1000,10
+"com.wiggleji.hashlab.bench.RouteBenchmark.route","avgt",1,5,122.523240,8.063351,"ns/op",ring_v1000,100
+"com.wiggleji.hashlab.bench.RouteBenchmark.route","avgt",1,5,279.626238,29.304889,"ns/op",ring_v1000,1000
+"com.wiggleji.hashlab.bench.RouteBenchmark.route","avgt",1,5,99.278283,20.064931,"ns/op",ring_treemap_v160,10
+"com.wiggleji.hashlab.bench.RouteBenchmark.route","avgt",1,5,158.430560,15.365932,"ns/op",ring_treemap_v160,100
+"com.wiggleji.hashlab.bench.RouteBenchmark.route","avgt",1,5,662.855627,214.647617,"ns/op",ring_treemap_v160,1000
+"com.wiggleji.hashlab.bench.RouteBenchmark.route","avgt",1,5,22.710055,2.403520,"ns/op",hrw,10
+"com.wiggleji.hashlab.bench.RouteBenchmark.route","avgt",1,5,211.100099,74.047353,"ns/op",hrw,100
+"com.wiggleji.hashlab.bench.RouteBenchmark.route","avgt",1,5,1432.731275,384.426570,"ns/op",hrw,1000
+"com.wiggleji.hashlab.bench.RouteBenchmark.route","avgt",1,5,31.194222,1.401348,"ns/op",jump,10
+"com.wiggleji.hashlab.bench.RouteBenchmark.route","avgt",1,5,46.732815,1.846634,"ns/op",jump,100
+"com.wiggleji.hashlab.bench.RouteBenchmark.route","avgt",1,5,61.199594,6.200769,"ns/op",jump,1000
+"com.wiggleji.hashlab.bench.RouteBenchmark.route","avgt",1,5,21.153715,0.931169,"ns/op",maglev_65537,10
+"com.wiggleji.hashlab.bench.RouteBenchmark.route","avgt",1,5,21.542800,0.508700,"ns/op",maglev_65537,100
+"com.wiggleji.hashlab.bench.RouteBenchmark.route","avgt",1,5,22.505143,5.077582,"ns/op",maglev_65537,1000
+"com.wiggleji.hashlab.bench.RouteBenchmark.route","avgt",1,5,30.940455,2.592988,"ns/op",maglev_655373,10
+"com.wiggleji.hashlab.bench.RouteBenchmark.route","avgt",1,5,35.222145,5.897998,"ns/op",maglev_655373,100
+"com.wiggleji.hashlab.bench.RouteBenchmark.route","avgt",1,5,36.971099,4.818973,"ns/op",maglev_655373,1000
+"com.wiggleji.hashlab.bench.RouteBenchmark.route","avgt",1,5,62.996594,5.368682,"ns/op",slot_1024,10
+"com.wiggleji.hashlab.bench.RouteBenchmark.route","avgt",1,5,61.961966,2.038763,"ns/op",slot_1024,100
+"com.wiggleji.hashlab.bench.RouteBenchmark.route","avgt",1,5,61.363269,0.407232,"ns/op",slot_1024,1000

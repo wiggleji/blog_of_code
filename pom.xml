@@ -16,6 +16,7 @@
     <description>code for blogging</description>
     <modules>
         <module>sslMle</module>
+        <module>consistentHashLab</module>
     </modules>
     <url/>
     <licenses>
