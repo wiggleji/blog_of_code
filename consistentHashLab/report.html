@@ -1,0 +1,1313 @@
+<title>해시 라우팅 4파전</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&display=swap">
+
+<style>
+:root {
+  --bg: #F6F5F9;
+  --surface: #FFFFFF;
+  --surface-2: #EEEDF4;
+  --surface-3: #E5E3EE;
+  --ink: #191725;
+  --ink-2: #46435A;
+  --muted: #726F84;
+  --rule: #DFDCE8;
+  --rule-strong: #C7C3D6;
+
+  --ring: #B4762A;
+  --hrw: #00897B;
+  --jump: #6E4FB5;
+  --maglev: #B23B5B;
+  --slot: #2E6FB8;
+
+  --good: #2E7D46;
+  --warn: #8A6410;
+  --crit: #A63B2E;
+
+  --shadow: 0 1px 2px rgba(25,23,37,.05), 0 8px 24px -12px rgba(25,23,37,.12);
+
+  --font-display: "Gowun Batang", Georgia, "Nanum Myeongjo", serif;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --measure: 34rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131220;
+    --surface: #1C1A2A;
+    --surface-2: #232134;
+    --surface-3: #2C2941;
+    --ink: #EEECF4;
+    --ink-2: #BDB9CB;
+    --muted: #8D8AA3;
+    --rule: #302D44;
+    --rule-strong: #443F5E;
+
+    --ring: #C18337;
+    --hrw: #12A08C;
+    --jump: #8A6FD0;
+    --maglev: #CC5A76;
+    --slot: #4A8AD4;
+
+    --good: #4FA96A;
+    --warn: #C09030;
+    --crit: #D4685A;
+
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.6);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #131220;
+  --surface: #1C1A2A;
+  --surface-2: #232134;
+  --surface-3: #2C2941;
+  --ink: #EEECF4;
+  --ink-2: #BDB9CB;
+  --muted: #8D8AA3;
+  --rule: #302D44;
+  --rule-strong: #443F5E;
+
+  --ring: #C18337;
+  --hrw: #12A08C;
+  --jump: #8A6FD0;
+  --maglev: #CC5A76;
+  --slot: #4A8AD4;
+
+  --good: #4FA96A;
+  --warn: #C09030;
+  --crit: #D4685A;
+
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.6);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-weight: 350;
+  font-size: 16.5px;
+  line-height: 1.72;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+  max-width: 62rem;
+  margin: 0 auto;
+  padding: 0 1.5rem 6rem;
+}
+
+.col { max-width: var(--measure); }
+pre.col { max-width: 46rem; }
+.thesis.col { max-width: 44rem; }
+
+h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; text-wrap: balance; margin: 0; line-height: 1.28; }
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: .72rem;
+  font-weight: 500;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ── header ─────────────────────────────────────────── */
+header.masthead {
+  padding: 5rem 0 2.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+header.masthead h1 {
+  font-size: clamp(2.6rem, 7vw, 4.1rem);
+  letter-spacing: -.02em;
+  margin: 1rem 0 0;
+}
+.standfirst {
+  font-size: 1.16rem;
+  color: var(--ink-2);
+  max-width: 38rem;
+  margin: 1.5rem 0 0;
+  font-weight: 300;
+}
+.standfirst strong { font-weight: 600; color: var(--ink); }
+
+.runline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem 1.6rem;
+  margin-top: 2.5rem;
+  font-family: var(--font-mono);
+  font-size: .78rem;
+  color: var(--muted);
+}
+.runline b { color: var(--ink-2); font-weight: 500; }
+
+/* ── sections ───────────────────────────────────────── */
+section { padding-top: 4.5rem; }
+.sec-head { display: flex; align-items: baseline; gap: .85rem; margin-bottom: 1.4rem; }
+.sec-num {
+  font-family: var(--font-mono);
+  font-size: .78rem;
+  color: var(--muted);
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  padding: .1rem .42rem;
+  flex: none;
+}
+h2 { font-size: clamp(1.6rem, 3.6vw, 2.15rem); letter-spacing: -.01em; }
+h3 { font-size: 1.22rem; margin: 2.6rem 0 .7rem; }
+h4 { font-size: 1rem; font-family: var(--font-body); font-weight: 600; margin: 1.8rem 0 .5rem; }
+
+p { margin: 0 0 1.05rem; }
+.col p, .col ul, .col ol { max-width: var(--measure); }
+a { color: inherit; text-underline-offset: .18em; text-decoration-color: var(--rule-strong); }
+a:hover { text-decoration-color: currentColor; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--jump); outline-offset: 3px; }
+
+ul, ol { padding-left: 1.15rem; margin: 0 0 1.05rem; }
+li { margin-bottom: .35rem; }
+
+code {
+  font-family: var(--font-mono);
+  font-size: .875em;
+  background: var(--surface-2);
+  padding: .08em .34em;
+  border-radius: 3px;
+}
+pre {
+  font-family: var(--font-mono);
+  font-size: .8rem;
+  line-height: 1.62;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 5px;
+  padding: 1rem 1.1rem;
+  overflow-x: auto;
+  margin: 0 0 1.1rem;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+.cm { color: var(--muted); }
+.kw { color: var(--jump); font-weight: 500; }
+.hl { background: color-mix(in srgb, var(--maglev) 14%, transparent); border-radius: 2px; padding: .05em .2em; }
+
+/* ── lede / callout ─────────────────────────────────── */
+.lede {
+  font-size: 1.06rem;
+  border-left: 2px solid var(--jump);
+  padding-left: 1.15rem;
+  color: var(--ink-2);
+  max-width: 36rem;
+}
+.thesis {
+  margin: 2.5rem 0;
+  padding: 1.6rem 1.75rem;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+  font-family: var(--font-display);
+  font-size: 1.28rem;
+  line-height: 1.55;
+}
+
+/* ── tables ─────────────────────────────────────────── */
+.tablewrap { overflow-x: auto; margin: 1.4rem 0 1.6rem; }
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: .85rem;
+  min-width: 34rem;
+}
+th, td {
+  text-align: right;
+  padding: .5rem .7rem;
+  border-bottom: 1px solid var(--rule);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+th {
+  font-family: var(--font-mono);
+  font-size: .7rem;
+  font-weight: 500;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--rule-strong);
+}
+td:first-child, th:first-child { text-align: left; }
+tbody tr:hover { background: var(--surface-2); }
+td.num { font-family: var(--font-mono); }
+.win { color: var(--good); font-weight: 600; }
+.lose { color: var(--crit); font-weight: 600; }
+caption {
+  caption-side: bottom;
+  text-align: left;
+  font-size: .78rem;
+  color: var(--muted);
+  padding-top: .6rem;
+}
+
+/* ── algorithm chips ────────────────────────────────── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .38rem;
+  font-family: var(--font-mono);
+  font-size: .74rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.chip::before {
+  content: "";
+  width: .58rem; height: .58rem;
+  border-radius: 2px;
+  background: var(--dot, var(--muted));
+  flex: none;
+}
+.a-ring { --dot: var(--ring); }
+.a-hrw { --dot: var(--hrw); }
+.a-jump { --dot: var(--jump); }
+.a-maglev { --dot: var(--maglev); }
+.a-slot { --dot: var(--slot); }
+
+/* ── capability matrix ──────────────────────────────── */
+.matrix { overflow-x: auto; margin: 1.6rem 0; }
+.matrix table { min-width: 40rem; font-size: .84rem; }
+.matrix th, .matrix td { text-align: center; }
+.matrix td:first-child, .matrix th:first-child { text-align: left; }
+.yes { color: var(--good); font-weight: 600; }
+.no { font-weight: 600; }
+.no.cost { color: var(--crit); }
+.paid {
+  display: block;
+  font-family: var(--font-body);
+  font-size: .7rem;
+  font-weight: 400;
+  color: var(--muted);
+  letter-spacing: 0;
+  margin-top: .1rem;
+  white-space: normal;
+}
+
+/* ── cards ──────────────────────────────────────────── */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 1rem; margin: 1.6rem 0; }
+.card {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--accent, var(--rule-strong));
+  border-radius: 5px;
+  padding: 1.1rem 1.2rem 1.25rem;
+  box-shadow: var(--shadow);
+}
+.card.c-ring { --accent: var(--ring); }
+.card.c-hrw { --accent: var(--hrw); }
+.card.c-jump { --accent: var(--jump); }
+.card.c-maglev { --accent: var(--maglev); }
+.card h4 { margin: .35rem 0 .5rem; font-family: var(--font-display); font-size: 1.12rem; }
+.card p { font-size: .88rem; margin-bottom: .7rem; color: var(--ink-2); }
+.card .paid-line {
+  font-size: .82rem;
+  border-top: 1px dashed var(--rule-strong);
+  padding-top: .65rem;
+  margin-top: .8rem;
+  color: var(--ink);
+}
+.card .paid-line b { color: var(--accent); }
+.card dl { display: grid; grid-template-columns: auto 1fr; gap: .1rem .8rem; font-family: var(--font-mono); font-size: .74rem; margin: 0 0 .3rem; }
+.card dt { color: var(--muted); }
+.card dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ── hypothesis scorecard ───────────────────────────── */
+.hyp {
+  display: grid;
+  grid-template-columns: 4.6rem 1fr;
+  gap: 0 1.1rem;
+  padding: 1.15rem 0;
+  border-bottom: 1px solid var(--rule);
+  align-items: start;
+}
+.hyp:first-of-type { border-top: 1px solid var(--rule-strong); }
+.verdict {
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-align: center;
+  padding: .2rem 0 .25rem;
+  border-radius: 3px;
+  border: 1px solid currentColor;
+}
+.v-o { color: var(--good); }
+.v-x { color: var(--crit); }
+.v-p { color: var(--warn); }
+.hyp .label { font-family: var(--font-mono); font-size: .72rem; color: var(--muted); margin-top: .4rem; text-align: center; }
+.hyp h4 { margin: 0 0 .3rem; }
+.hyp p { font-size: .92rem; margin: 0; color: var(--ink-2); max-width: 36rem; }
+
+/* ── figures / charts ───────────────────────────────── */
+figure {
+  margin: 2rem 0;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 1.35rem 1.5rem 1.25rem;
+  box-shadow: var(--shadow);
+}
+figcaption { font-size: .8rem; color: var(--muted); margin-top: .9rem; max-width: 42rem; }
+.fig-title { font-family: var(--font-body); font-weight: 600; font-size: .98rem; margin-bottom: .15rem; }
+.fig-sub { font-size: .78rem; color: var(--muted); margin-bottom: 1.1rem; }
+.chartscroll { overflow-x: auto; }
+.legend { display: flex; flex-wrap: wrap; gap: .5rem 1.1rem; margin-bottom: 1rem; }
+
+/* bar chart */
+.bars { display: grid; gap: .42rem; }
+.bar-row {
+  display: grid;
+  grid-template-columns: minmax(7.5rem, 10rem) 1fr minmax(3.6rem, auto);
+  align-items: center;
+  gap: .8rem;
+}
+.bar-track { position: relative; height: 1.1rem; background: var(--surface-2); border-radius: 2px; }
+.bar-fill { height: 100%; border-radius: 0 4px 4px 0; background: var(--dot, var(--muted)); }
+.bar-fill.broken {
+  background: repeating-linear-gradient(115deg, var(--dot) 0 7px, color-mix(in srgb, var(--dot) 45%, var(--surface)) 7px 12px);
+  border-radius: 0 2px 2px 0;
+}
+.bar-val { font-family: var(--font-mono); font-size: .78rem; font-variant-numeric: tabular-nums; text-align: right; }
+.bar-ref {
+  position: absolute; top: -.25rem; bottom: -.25rem;
+  border-left: 1px dashed var(--rule-strong);
+}
+.axis-note { font-family: var(--font-mono); font-size: .7rem; color: var(--muted); margin-top: .7rem; }
+
+svg .grid { stroke: var(--rule); stroke-width: 1; }
+svg .axis { stroke: var(--rule-strong); stroke-width: 1; }
+svg .tick { fill: var(--muted); font-family: var(--font-mono); font-size: 10px; }
+svg .lbl { fill: var(--ink-2); font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; }
+svg .series { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+svg .refline { stroke: var(--rule-strong); stroke-width: 1; stroke-dasharray: 3 3; }
+svg .dot { stroke: var(--surface); stroke-width: 2; }
+
+/* ── quote / source blocks ──────────────────────────── */
+.src {
+  background: var(--surface-2);
+  border-left: 2px solid var(--rule-strong);
+  border-radius: 0 4px 4px 0;
+  padding: .9rem 1.1rem;
+  margin: 1.2rem 0;
+  font-size: .86rem;
+}
+.src .from { font-family: var(--font-mono); font-size: .72rem; color: var(--muted); margin-bottom: .45rem; }
+.src pre { background: none; border: none; padding: 0; margin: 0; font-size: .78rem; }
+.src blockquote { margin: 0; font-style: italic; color: var(--ink-2); }
+
+/* ── decision guide ─────────────────────────────────── */
+.guide { display: grid; gap: .5rem; margin: 1.5rem 0; }
+.guide-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: .4rem 1.2rem;
+  align-items: baseline;
+  padding: .8rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--dot, var(--rule-strong));
+  border-radius: 4px;
+}
+.guide-row .why { grid-column: 1 / -1; font-size: .8rem; color: var(--muted); }
+.guide-row .when { font-size: .92rem; }
+.guide-row.warn-row { --dot: var(--crit); }
+
+#tip {
+  position: fixed;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -125%);
+  background: var(--ink);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-size: .72rem;
+  line-height: 1.45;
+  padding: .38rem .55rem;
+  border-radius: 4px;
+  white-space: pre;
+  box-shadow: 0 6px 20px -6px rgba(0,0,0,.4);
+  transition: opacity .1s;
+}
+#tip.on { opacity: 1; }
+.bar-row[data-tip] { cursor: default; }
+.bar-row[data-tip]:hover .bar-track { outline: 1px solid var(--rule-strong); outline-offset: 2px; }
+svg .hit { cursor: default; }
+
+details.datatable { margin-top: 1rem; }
+details.datatable summary {
+  font-family: var(--font-mono);
+  font-size: .74rem;
+  color: var(--muted);
+  cursor: pointer;
+  padding: .3rem 0;
+}
+details.datatable summary:hover { color: var(--ink-2); }
+details.datatable table { min-width: 30rem; }
+
+footer {
+  margin-top: 5rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--rule);
+  font-size: .82rem;
+  color: var(--muted);
+}
+footer code { font-size: .8rem; }
+
+@media (max-width: 640px) {
+  body { font-size: 16px; }
+  header.masthead { padding-top: 3rem; }
+  .hyp { grid-template-columns: 1fr; gap: .5rem; }
+  .hyp .verdict { max-width: 5rem; }
+  .hyp .label { text-align: left; margin: 0; }
+  .bar-row { grid-template-columns: minmax(6rem, 7rem) 1fr auto; gap: .5rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="eyebrow">스터디 · 대규모 시스템 설계 5장 확장</div>
+
+  <h1>해시 라우팅 4파전</h1>
+  <p class="standfirst">
+    책은 <strong>링</strong>만 가르친다. 그런데 Envoy 설정에는 <code>ring_hash</code>와 <code>maglev</code>가
+    나란히 있고, Guava가 <code>consistentHash</code>라는 이름으로 내놓은 유일한 API는 링이 아니다.
+    넷을 같은 조건에 올려놓고 재봤다.
+  </p>
+  <div class="runline">
+    <span><b>키</b> 100만 × 2세트 (user:{i}, UUID)</span>
+    <span><b>노드</b> N ∈ 10 · 100 · 1000</span>
+    <span><b>환경</b> Kotlin / JDK 21 / JMH 1.37</span>
+    <span><b>테스트</b> 23 passed</span>
+  </div>
+</header>
+
+<!-- ══════════ 1. 성질 ══════════ -->
+<section>
+  <div class="sec-head"><span class="sec-num">01</span><h2>샤딩 라우터가 만족해야 할 네 가지</h2></div>
+  <div class="col">
+    <p>키 하나를 노드 하나로 보내는 함수. 그게 전부다. 그런데 실무에서 이 함수에 요구하는 건 네 가지다.</p>
+    <ol>
+      <li><b>임의 노드 제거</b> — 3번 노드가 죽으면 3번만 빠져야 한다</li>
+      <li><b>빠른 조회</b> — 요청마다 실행되는 코드다</li>
+      <li><b>고른 분포</b> — 한 노드만 뜨거우면 나머지가 놀아도 소용없다</li>
+      <li><b>최소 재배치</b> — 노드 1대가 빠질 때 키의 1/N만 움직여야 한다</li>
+    </ol>
+    <p>네 알고리즘을 다 구현해서 재보면, 네 칸을 모두 채우는 행이 없다.</p>
+  </div>
+
+  <div class="matrix tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th>알고리즘</th>
+          <th>임의 노드 제거</th>
+          <th>조회</th>
+          <th>분포</th>
+          <th>최소 재배치</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="chip a-ring">Ring / Ketama</span></td>
+          <td class="yes">✓</td>
+          <td class="no">O(log NV)<span class="paid">144 ns @ N=1000</span></td>
+          <td class="no cost">✗<span class="paid">잡음 바닥의 2.6배</span></td>
+          <td class="yes">✓</td>
+        </tr>
+        <tr>
+          <td><span class="chip a-hrw">Rendezvous (HRW)</span></td>
+          <td class="yes">✓</td>
+          <td class="no cost">✗ O(N)<span class="paid">1,433 ns @ N=1000</span></td>
+          <td class="yes">✓</td>
+          <td class="yes">✓ 정의상</td>
+        </tr>
+        <tr>
+          <td><span class="chip a-jump">Jump</span></td>
+          <td class="no cost">✗<span class="paid">끝 버킷만 뗄 수 있다</span></td>
+          <td class="no">O(ln N)<span class="paid">61 ns</span></td>
+          <td class="yes">✓</td>
+          <td class="yes">✓ 끝 버킷 한정</td>
+        </tr>
+        <tr>
+          <td><span class="chip a-maglev">Maglev</span></td>
+          <td class="yes">✓</td>
+          <td class="yes">✓ O(1)<span class="paid">22 ns, N과 무관</span></td>
+          <td class="yes">✓</td>
+          <td class="no cost">✗<span class="paid">+0.2~0.6%p 초과 이동</span></td>
+        </tr>
+      </tbody>
+      <caption>실측값은 아래 §4. 조회 시간은 <code>routeHashed(long)</code> 1회, JMH 평균.</caption>
+    </table>
+  </div>
+
+  <div class="thesis col">
+    성질 넷을 동시에 만족하는 알고리즘은 없다.<br>
+    <b>무엇을 포기했는지가 곧 그 알고리즘의 용도다.</b>
+  </div>
+</section>
+
+<!-- ══════════ 2. 인터페이스 ══════════ -->
+<section>
+  <div class="sec-head"><span class="sec-num">02</span><h2>인터페이스를 쓰는 순간 결론 하나가 나온다</h2></div>
+  <div class="col">
+    <p>구현하기 전에 타입부터 적었다.</p>
+  </div>
+
+  <pre class="col"><code><span class="kw">interface</span> HashRouter {
+    <span class="kw">fun</span> route(key: String): NodeId
+}
+
+<span class="cm">/** 노드가 동적으로 들고 나는 토폴로지 */</span>
+<span class="kw">interface</span> MutableTopology {
+    <span class="kw">fun</span> add(node: NodeId)
+    <span class="hl"><span class="kw">fun</span> remove(node: NodeId)</span>   <span class="cm">// ← 임의 노드 제거</span>
+}</code></pre>
+
+  <div class="col">
+    <p>
+      Ring · HRW · Maglev는 둘 다 구현한다. <b>Jump는 아래쪽을 구현할 수 없다.</b>
+      Jump의 버킷은 <code>0..n-1</code>이라 끝에서만 늘고 줄기 때문에, 3번 노드가 죽어도 3번을 뺄 방법이 없다.
+    </p>
+    <p>
+      이걸 <code>UnsupportedOperationException</code>으로 덮지 않고 <b>타입을 갈라서 컴파일 타임에 드러나게</b> 뒀다.
+      그러자 코드가 §4의 주장을 대신 증명한다 — <i>Jump는 로드밸런서에 못 쓰고 샤드 개수 매핑에만 쓴다.</i>
+      Guava가 <code>consistentHash(long, int)</code>를 하필 이 시그니처로 내놓은 이유이기도 하다.
+      인자에 노드 목록이 아예 없다.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════ 3. 4파전 ══════════ -->
+<section>
+  <div class="sec-head"><span class="sec-num">03</span><h2>넷을 소개한다 — 각자 무엇을 팔았는지</h2></div>
+
+  <div class="cards">
+    <div class="card c-ring">
+      <span class="chip a-ring">① Ring / Ketama</span>
+      <h4>링 + 가상 노드</h4>
+      <p>노드마다 V개의 점을 링에 뿌리고, 키 해시보다 큰 첫 점을 이진 탐색. 책이 가르치는 그것.</p>
+      <dl>
+        <dt>조회</dt><dd>O(log NV)</dd>
+        <dt>메모리</dt><dd>N·V 포인트</dd>
+        <dt>ketama</dt><dd>서버당 160점</dd>
+      </dl>
+      <div class="paid-line">판 것: <b>균등성과 메모리.</b> 분포는 V에 비례해서만 좋아진다.</div>
+    </div>
+
+    <div class="card c-hrw">
+      <span class="chip a-hrw">② Rendezvous (HRW)</span>
+      <h4>전부 계산해서 최댓값</h4>
+      <p>키 k에 대해 모든 노드의 가중치 <code>hash(k, i)</code>를 구하고 1등을 고른다. 링도 가상 노드도 없다.</p>
+      <dl>
+        <dt>조회</dt><dd>O(N)</dd>
+        <dt>메모리</dt><dd>노드당 long 1개</dd>
+        <dt>가중치</dt><dd>자연스럽게 지원</dd>
+      </dl>
+      <div class="paid-line">판 것: <b>조회 속도.</b> 노드가 1000개면 요청마다 1000번 섞는다.</div>
+    </div>
+
+    <div class="card c-jump">
+      <span class="chip a-jump">③ Jump (2014)</span>
+      <h4>상태 없는 함수 7줄</h4>
+      <p>버킷 번호를 계산하는 순수 함수. 자료구조가 아예 없다. 분포는 거의 완벽.</p>
+      <dl>
+        <dt>조회</dt><dd>O(ln N)</dd>
+        <dt>메모리</dt><dd>0</dd>
+        <dt>구축</dt><dd>0</dd>
+      </dl>
+      <div class="paid-line">판 것: <b>임의 노드 제거.</b> 이게 이번 실험의 하이라이트다.</div>
+    </div>
+
+    <div class="card c-maglev">
+      <span class="chip a-maglev">④ Maglev (2016)</span>
+      <h4>미리 채운 룩업 테이블</h4>
+      <p>크기 M(소수)인 배열을 백엔드들의 순열로 채워두고, 조회는 인덱싱 한 번.</p>
+      <dl>
+        <dt>조회</dt><dd>O(1)</dd>
+        <dt>메모리</dt><dd>M ints</dd>
+        <dt>기본 M</dt><dd>65537</dd>
+      </dl>
+      <div class="paid-line">판 것: <b>최소 재배치.</b> 테이블을 다시 채우니 초과 이동이 생긴다.</div>
+    </div>
+  </div>
+
+  <h3>Jump의 전부 — 이게 알고리즘 하나다</h3>
+  <pre class="col"><code><span class="kw">fun</span> jump(key: Long, buckets: Int): Int {
+    <span class="kw">var</span> k = key; <span class="kw">var</span> b = -1L; <span class="kw">var</span> j = 0L
+    <span class="kw">while</span> (j &lt; buckets) {
+        b = j
+        k = k * 2862933555777941757L + 1
+        j = ((b + 1) * ((1L shl 31).toDouble() / ((k <span class="hl">ushr</span> 33) + 1).toDouble())).toLong()
+    }
+    <span class="kw">return</span> b.toInt()
+}</code></pre>
+  <div class="col">
+    <p>
+      <code>ushr</code>(부호 없는 시프트)을 <code>shr</code>로 쓰면 컴파일도 되고 대충 돌아가지만
+      분포가 조용히 망가진다. 테스트가 그걸 잡는다 — 잘못된 버전은 peak/mean이 1.5를 넘고,
+      정상 버전은 1.05 아래에 머문다.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════ 4. 실측 ══════════ -->
+<section>
+  <div class="sec-head"><span class="sec-num">04</span><h2>실측</h2></div>
+
+  <h3>먼저: 잡음 바닥을 모르면 숫자를 읽을 수 없다</h3>
+  <div class="col">
+    <p>
+      키 K개를 노드 N개에 <b>완벽하게 무작위로</b> 뿌려도 노드별 키 수는 다항분포를 따른다.
+      변동계수(CV)는 <code>1/√(K/N)</code>만큼 흔들린다. <b>이보다 낮은 CV는 존재할 수 없다.</b>
+    </p>
+    <p>
+      처음에 <code>peak/mean &lt; 1.05</code>라는 테스트를 짰다가 실패했다. N=1000에서 완벽한 해시도
+      1.10이 나오기 때문이다. 알고리즘 탓이 아니라 표본의 성질이었다. 이 절이 생긴 이유다.
+    </p>
+  </div>
+
+  <div class="tablewrap col">
+    <table>
+      <thead><tr><th>N</th><th>노드당 평균 키</th><th>잡음 바닥 CV</th></tr></thead>
+      <tbody>
+        <tr><td class="num">10</td><td class="num">100,000</td><td class="num">0.32 %</td></tr>
+        <tr><td class="num">100</td><td class="num">10,000</td><td class="num">1.00 %</td></tr>
+        <tr><td class="num">1000</td><td class="num">1,000</td><td class="num">3.16 %</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Chart A: cv / floor -->
+  <figure>
+    <div class="fig-title">분포 — 잡음 바닥 대비 몇 배인가</div>
+    <div class="fig-sub">N=1000, user 키 100만개. 1.0 = 이론상 도달 가능한 최선.</div>
+    <div class="bars">
+      <div class="bar-row" data-tip="jump&#10;N=1000 · CV 3.11% · 잡음 바닥 3.16%"><span class="chip a-jump">jump</span>
+        <div class="bar-track"><div class="bar-fill" style="--dot:var(--jump); width:20.4%"></div><div class="bar-ref" style="left:20.8%"></div></div>
+        <span class="bar-val">×0.98</span></div>
+      <div class="bar-row" data-tip="hrw&#10;N=1000 · CV 3.17% · 잡음 바닥 3.16%"><span class="chip a-hrw">hrw</span>
+        <div class="bar-track"><div class="bar-fill" style="--dot:var(--hrw); width:20.8%"></div><div class="bar-ref" style="left:20.8%"></div></div>
+        <span class="bar-val">×1.00</span></div>
+      <div class="bar-row" data-tip="maglev M=65537&#10;N=1000 · CV 3.19% · peak/mean 1.095"><span class="chip a-maglev">maglev M=65537</span>
+        <div class="bar-track"><div class="bar-fill" style="--dot:var(--maglev); width:21.0%"></div><div class="bar-ref" style="left:20.8%"></div></div>
+        <span class="bar-val">×1.01</span></div>
+      <div class="bar-row" data-tip="ring V=1000&#10;N=1000 · CV 4.48% · peak/mean 1.136"><span class="chip a-ring">ring V=1000</span>
+        <div class="bar-track"><div class="bar-fill" style="--dot:var(--ring); width:29.6%"></div><div class="bar-ref" style="left:20.8%"></div></div>
+        <span class="bar-val">×1.42</span></div>
+      <div class="bar-row" data-tip="ring V=160&#10;N=1000 · CV 8.24% · peak/mean 1.247"><span class="chip a-ring">ring V=160</span>
+        <div class="bar-track"><div class="bar-fill" style="--dot:var(--ring); width:54.2%"></div><div class="bar-ref" style="left:20.8%"></div></div>
+        <span class="bar-val">×2.60</span></div>
+      <div class="bar-row" data-tip="ketama V=160&#10;N=1000 · CV 9.06% · peak/mean 1.325"><span class="chip a-ring">ketama V=160</span>
+        <div class="bar-track"><div class="bar-fill" style="--dot:var(--ring); width:59.6%"></div><div class="bar-ref" style="left:20.8%"></div></div>
+        <span class="bar-val">×2.86</span></div>
+      <div class="bar-row" data-tip="slot table S=1024&#10;N=1000 · CV 15.23% · peak/mean 2.020"><span class="chip a-slot">slot table S=1024</span>
+        <div class="bar-track"><div class="bar-fill" style="--dot:var(--slot); width:100%"></div><div class="bar-ref" style="left:20.8%"></div></div>
+        <span class="bar-val">×4.82</span></div>
+    </div>
+    <div class="axis-note">┆ 점선 = 잡음 바닥(×1.0) · 눈금 0 → ×4.82</div>
+    <figcaption>
+      Jump · HRW · Maglev 셋은 바닥에 붙어 있어 서로 <b>구별되지 않는다</b>. 예측(H1)에서 HRW를
+      아래로 뒀던 건 틀렸다. 확실히 뒤처지는 건 Ring뿐이고, 슬롯 테이블은 다른 이유로 나쁘다(에필로그).
+    </figcaption>
+  </figure>
+
+  <h3>링의 CV는 <code>1/√V</code>다 — 모델과 실측이 5% 안에서 맞는다</h3>
+  <div class="col">
+    <p>노드 N개가 각각 V개의 점을 뿌리면 담당 구간은 Beta 분포를 따르고, 여기에 표본 잡음이 직교로 더해진다.</p>
+  </div>
+  <pre class="col"><code>cv ≈ sqrt( (1 - 1/N)/V  +  N/K )
+             └ 링 아크의 분산 ┘   └ 표본 잡음 ┘</code></pre>
+
+  <figure>
+    <div class="fig-title">가상 노드를 100배 늘려야 편차가 1/10이 된다</div>
+    <div class="fig-sub">Ring, user 키 100만개. 양축 로그.</div>
+    <div class="legend">
+      <span class="chip a-ring" style="--dot:var(--ring)">측정 N=1000</span>
+      <span class="chip a-ring" style="--dot:color-mix(in srgb, var(--ring) 45%, var(--surface))">측정 N=100</span>
+      <span class="chip" style="--dot:var(--muted)">모델 1/√V</span>
+    </div>
+    <div class="chartscroll">
+    <svg viewBox="0 0 700 290" width="100%" style="min-width:440px" role="img" aria-label="가상 노드 수 V에 따른 링의 변동계수. V가 100배 늘 때 CV는 10분의 1로 준다.">
+      <!-- y gridlines -->
+      <line class="grid" x1="60" y1="39.8" x2="600" y2="39.8"/>
+      <line class="grid" x1="60" y1="104.5" x2="600" y2="104.5"/>
+      <line class="grid" x1="60" y1="163.5" x2="600" y2="163.5"/>
+      <line class="grid" x1="60" y1="228.2" x2="600" y2="228.2"/>
+      <text class="tick" x="52" y="43" text-anchor="end">100%</text>
+      <text class="tick" x="52" y="108" text-anchor="end">30%</text>
+      <text class="tick" x="52" y="167" text-anchor="end">10%</text>
+      <text class="tick" x="52" y="232" text-anchor="end">3%</text>
+      <line class="axis" x1="60" y1="250" x2="600" y2="250"/>
+      <text class="tick" x="60" y="266" text-anchor="middle">V=1</text>
+      <text class="tick" x="240" y="266" text-anchor="middle">10</text>
+      <text class="tick" x="420" y="266" text-anchor="middle">100</text>
+      <text class="tick" x="600" y="266" text-anchor="middle">1000</text>
+
+      <!-- noise floor N=1000 -->
+      <line class="refline" x1="60" y1="225.4" x2="600" y2="225.4"/>
+      <text class="tick" x="64" y="221">N=1000 잡음 바닥 3.16%</text>
+
+      <!-- model -->
+      <polyline class="series" points="60,39.8 240,101.6 420,163.5 600,225.4"
+                stroke="var(--muted)" stroke-dasharray="5 4" stroke-width="1.5"/>
+      <!-- N=100 measured -->
+      <polyline class="series" points="60,34.6 240,107.3 420,160.7 456.7,173.7 600,224.4"
+                stroke="var(--ring)" stroke-opacity=".45"/>
+      <!-- N=1000 measured -->
+      <polyline class="series" points="60,40.0 240,100.3 420,159.5 456.7,173.9 600,206.7"
+                stroke="var(--ring)"/>
+      <g fill="var(--ring)">
+        <circle class="dot" cx="60" cy="40.0" r="4" data-tip="ring V=1, N=1000&#10;CV 99.5% · peak/mean 6.69"/>
+        <circle class="dot" cx="240" cy="100.3" r="4" data-tip="ring V=10, N=1000&#10;CV 32.5% · 모델 31.8%"/>
+        <circle class="dot" cx="420" cy="159.5" r="4" data-tip="ring V=100, N=1000&#10;CV 10.8% · 모델 10.5%"/>
+        <circle class="dot" cx="456.7" cy="173.9" r="4" data-tip="ring V=160, N=1000&#10;CV 8.24% · 모델 8.51%"/>
+        <circle class="dot" cx="600" cy="206.7" r="4" data-tip="ring V=1000, N=1000&#10;CV 4.48% · 모델 4.47%"/>
+      </g>
+      <text class="lbl" x="462" y="164" fill="var(--ring)">V=160 → 8.2%</text>
+      <text class="lbl" x="608" y="210" fill="var(--ring)">N=1000</text>
+      <text class="lbl" x="608" y="228" fill="var(--ring)" opacity=".55">N=100</text>
+    </svg>
+    </div>
+    <figcaption>
+      N=1000 선이 끝에서 모델 위로 벌어지는 건 잡음 바닥(3.16%)에 부딪혔기 때문이다.
+      V=160의 8.2%를 0.8%로 만들려면 V=16000이 필요하고, 그건 N=1000일 때 링에 점 1,600만 개다.
+      Envoy가 <code>maximum_ring_size</code>를 8M으로 잘라둔 이유가 여기 있다.
+    </figcaption>
+  </figure>
+
+  <div class="col">
+    <h4>가상 노드가 없는 링(V=1)은 정말로 못 쓴다</h4>
+  </div>
+  <div class="tablewrap col">
+    <table>
+      <thead><tr><th>N</th><th>peak / mean</th><th>min / mean</th></tr></thead>
+      <tbody>
+        <tr><td class="num">10</td><td class="num">2.64</td><td class="num">0.105</td></tr>
+        <tr><td class="num">100</td><td class="num lose">7.47</td><td class="num lose">0.008</td></tr>
+        <tr><td class="num">1000</td><td class="num">6.69</td><td class="num">0.000</td></tr>
+      </tbody>
+      <caption>N=100에서 어떤 노드는 제 몫의 7.5배를 받고, 어떤 노드는 0.8%를 받는다.</caption>
+    </table>
+  </div>
+
+  <!-- Chart B: rebalance -->
+  <h3>재배치 — 배수로 읽으면 겁나고, 절대값으로 읽으면 다르다</h3>
+  <figure>
+    <div class="fig-title">노드 1대 제거 시 이동한 키 / 이론 최소치(1/N)</div>
+    <div class="fig-sub">N=1000, user 키 100만개. ×1.0 = 이론 최소.</div>
+    <div class="bars">
+      <div class="bar-row" data-tip="slot table S=1024&#10;이동 0.093% · 이론 최소 0.100%"><span class="chip a-slot">slot table</span>
+        <div class="bar-track"><div class="bar-fill" style="--dot:var(--slot); width:13.0%"></div><div class="bar-ref" style="left:14.0%"></div></div>
+        <span class="bar-val">×0.93</span></div>
+      <div class="bar-row" data-tip="ketama V=160&#10;이동 0.094% · 이론 최소 0.100%"><span class="chip a-ring">ketama V=160</span>
+        <div class="bar-track"><div class="bar-fill" style="--dot:var(--ring); width:13.2%"></div><div class="bar-ref" style="left:14.0%"></div></div>
+        <span class="bar-val">×0.94</span></div>
+      <div class="bar-row" data-tip="hrw&#10;이동 0.104% · 이론 최소 0.100%"><span class="chip a-hrw">hrw</span>
+        <div class="bar-track"><div class="bar-fill" style="--dot:var(--hrw); width:14.6%"></div><div class="bar-ref" style="left:14.0%"></div></div>
+        <span class="bar-val">×1.04</span></div>
+      <div class="bar-row" data-tip="jump, 끝 버킷 제거&#10;이동 0.105% · 이론 최소 0.100%"><span class="chip a-jump">jump · 끝 버킷</span>
+        <div class="bar-track"><div class="bar-fill" style="--dot:var(--jump); width:14.7%"></div><div class="bar-ref" style="left:14.0%"></div></div>
+        <span class="bar-val">×1.05</span></div>
+      <div class="bar-row" data-tip="ring V=160&#10;이동 0.115% · 이론 최소 0.100%"><span class="chip a-ring">ring V=160</span>
+        <div class="bar-track"><div class="bar-fill" style="--dot:var(--ring); width:16.1%"></div><div class="bar-ref" style="left:14.0%"></div></div>
+        <span class="bar-val">×1.15</span></div>
+      <div class="bar-row" data-tip="maglev M=655373&#10;이동 0.419% · 초과 +0.32%p"><span class="chip a-maglev">maglev M=655373</span>
+        <div class="bar-track"><div class="bar-fill" style="--dot:var(--maglev); width:58.8%"></div><div class="bar-ref" style="left:14.0%"></div></div>
+        <span class="bar-val">×4.20</span></div>
+      <div class="bar-row" data-tip="maglev M=65537&#10;이동 0.691% · 초과 +0.59%p"><span class="chip a-maglev">maglev M=65537</span>
+        <div class="bar-track"><div class="bar-fill" style="--dot:var(--maglev); width:96.7%"></div><div class="bar-ref" style="left:14.0%"></div></div>
+        <span class="bar-val">×6.91</span></div>
+      <div class="bar-row" data-tip="jump, 가운데 노드 제거(금지된 연산)&#10;이동 39.0% · 이론 최소 0.100%"><span class="chip a-jump">jump · 가운데 노드</span>
+        <div class="bar-track"><div class="bar-fill broken" style="--dot:var(--jump); width:100%"></div><div class="bar-ref" style="left:14.0%"></div></div>
+        <span class="bar-val">×390</span></div>
+    </div>
+    <div class="axis-note">┆ 점선 = 이론 최소(×1.0) · 눈금 0 → ×7 · 빗금 막대는 눈금 밖(×390)</div>
+    <figcaption>
+      <b>Jump의 마지막 줄이 이번 실험의 하이라이트다.</b> 끝에서 떼면 완벽하지만(×1.05),
+      가운데 노드가 죽었다고 뒤 노드 번호를 당기면 키의 39%가 이사한다.
+      Jump가 돌려주는 건 노드가 아니라 <i>버킷 번호</i>고, 번호를 당기는 순간 그 번호가 가리키는 노드가 통째로 바뀐다.
+    </figcaption>
+  </figure>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Maglev 초과분</th><th>이동률</th><th>이론 최소</th><th>초과분(절대)</th><th>배수</th></tr></thead>
+      <tbody>
+        <tr><td>M=65537, N=10</td><td class="num">10.22 %</td><td class="num">10.0 %</td><td class="num">+0.22 %p</td><td class="num">×1.02</td></tr>
+        <tr><td>M=65537, N=100</td><td class="num">1.55 %</td><td class="num">1.00 %</td><td class="num">+0.55 %p</td><td class="num">×1.55</td></tr>
+        <tr><td>M=65537, N=1000</td><td class="num">0.69 %</td><td class="num">0.10 %</td><td class="num">+0.59 %p</td><td class="num lose">×6.91</td></tr>
+        <tr><td>M=655373, N=1000</td><td class="num">0.42 %</td><td class="num">0.10 %</td><td class="num">+0.32 %p</td><td class="num">×4.20</td></tr>
+      </tbody>
+      <caption>
+        초과분은 N과 거의 무관하게 <b>전체 키의 0.2~0.6%</b>에 머문다. N이 커질수록 이론 최소치(1/N)가
+        작아지니까 배수만 커 보인다. 캐시 운영자에게 중요한 건 배수가 아니라 미스율이고, 그건 0.6%다.
+      </caption>
+    </table>
+  </div>
+
+  <!-- Chart C: speed -->
+  <h3>속도 — HRW만 무너지고 Maglev만 평평하다</h3>
+  <figure>
+    <div class="fig-title"><code>routeHashed(long)</code> 1회 · ns/op</div>
+    <div class="fig-sub">JMH, fork 1 · warmup 3×1s · measure 5×1s. 키 해시는 미리 계산해서 뺐다. 양축 로그.</div>
+    <div class="legend">
+      <span class="chip a-maglev">maglev M=65537</span>
+      <span class="chip a-jump">jump</span>
+      <span class="chip a-ring">ring V=160 (배열)</span>
+      <span class="chip a-ring" style="--dot:color-mix(in srgb, var(--ring) 45%, var(--surface))">ring V=160 (TreeMap)</span>
+      <span class="chip a-hrw">hrw</span>
+    </div>
+    <div class="chartscroll">
+    <svg viewBox="0 0 760 360" width="100%" style="min-width:460px" role="img" aria-label="노드 수에 따른 라우팅 지연. HRW는 선형으로 무너지고 Maglev는 평평하다.">
+      <line class="grid" x1="60" y1="320" x2="640" y2="320"/>
+      <line class="grid" x1="60" y1="194" x2="640" y2="194"/>
+      <line class="grid" x1="60" y1="68" x2="640" y2="68"/>
+      <text class="tick" x="52" y="323" text-anchor="end">10 ns</text>
+      <text class="tick" x="52" y="197" text-anchor="end">100 ns</text>
+      <text class="tick" x="52" y="71" text-anchor="end">1 µs</text>
+      <line class="axis" x1="60" y1="336" x2="640" y2="336"/>
+      <text class="tick" x="60" y="352" text-anchor="middle">N=10</text>
+      <text class="tick" x="350" y="352" text-anchor="middle">N=100</text>
+      <text class="tick" x="640" y="352" text-anchor="middle">N=1000</text>
+
+      <!-- reference: key hashing cost -->
+      <line class="refline" x1="60" y1="254.6" x2="640" y2="254.6"/>
+      <text class="tick" x="636" y="250" text-anchor="end">키 해시 1회 = 33 ns</text>
+
+      <polyline class="series" points="60,275.1 350,153.1 640,47.9" stroke="var(--hrw)"/>
+      <polyline class="series" points="60,194.4 350,168.8 640,90.6" stroke="var(--ring)" stroke-opacity=".45" stroke-dasharray="6 4"/>
+      <polyline class="series" points="60,219.2 350,197.8 640,174.1" stroke="var(--ring)"/>
+      <polyline class="series" points="60,257.7 350,235.6 640,220.8" stroke="var(--jump)"/>
+      <polyline class="series" points="60,278.9 350,278.1 640,275.6" stroke="var(--maglev)"/>
+
+      <g>
+        <circle class="dot" cx="60" cy="275.1" r="4" fill="var(--hrw)" data-tip="hrw · N=10&#10;22.7 ns/op"/>
+        <circle class="dot" cx="350" cy="153.1" r="4" fill="var(--hrw)" data-tip="hrw · N=100&#10;211.1 ns/op"/>
+        <circle class="dot" cx="640" cy="47.9" r="4.5" fill="var(--hrw)" data-tip="hrw · N=1000&#10;1432.7 ns/op"/>
+        <circle class="dot" cx="60" cy="194.4" r="4" fill="var(--ring)" fill-opacity=".45" data-tip="ring TreeMap · N=10&#10;99.3 ns/op"/>
+        <circle class="dot" cx="350" cy="168.8" r="4" fill="var(--ring)" fill-opacity=".45" data-tip="ring TreeMap · N=100&#10;158.4 ns/op"/>
+        <circle class="dot" cx="640" cy="90.6" r="4" fill="var(--ring)" fill-opacity=".45" data-tip="ring TreeMap · N=1000&#10;662.9 ns/op"/>
+        <circle class="dot" cx="60" cy="219.2" r="4" fill="var(--ring)" data-tip="ring V=160 · N=10&#10;63.0 ns/op"/>
+        <circle class="dot" cx="350" cy="197.8" r="4" fill="var(--ring)" data-tip="ring V=160 · N=100&#10;93.2 ns/op"/>
+        <circle class="dot" cx="640" cy="174.1" r="4" fill="var(--ring)" data-tip="ring V=160 · N=1000&#10;143.8 ns/op"/>
+        <circle class="dot" cx="60" cy="257.7" r="4" fill="var(--jump)" data-tip="jump · N=10&#10;31.2 ns/op"/>
+        <circle class="dot" cx="350" cy="235.6" r="4" fill="var(--jump)" data-tip="jump · N=100&#10;46.7 ns/op"/>
+        <circle class="dot" cx="640" cy="220.8" r="4" fill="var(--jump)" data-tip="jump · N=1000&#10;61.2 ns/op"/>
+        <circle class="dot" cx="60" cy="278.9" r="4" fill="var(--maglev)" data-tip="maglev M=65537 · N=10&#10;21.2 ns/op"/>
+        <circle class="dot" cx="350" cy="278.1" r="4" fill="var(--maglev)" data-tip="maglev M=65537 · N=100&#10;21.5 ns/op"/>
+        <circle class="dot" cx="640" cy="275.6" r="4.5" fill="var(--maglev)" data-tip="maglev M=65537 · N=1000&#10;22.5 ns/op"/>
+      </g>
+      <text class="lbl" x="648" y="45" fill="var(--hrw)">1,433</text>
+      <text class="lbl" x="648" y="94" fill="var(--ring)">663</text>
+      <text class="lbl" x="648" y="177" fill="var(--ring)">144</text>
+      <text class="lbl" x="648" y="224" fill="var(--jump)">61</text>
+      <text class="lbl" x="648" y="279" fill="var(--maglev)">22</text>
+    </svg>
+    </div>
+    <figcaption>
+      HRW는 N=10에서 <b>22.7 ns로 전체 1위</b>였다가 N=1000에서 63배 느려진다.
+      점선 아래 영역은 "키 문자열 하나 해싱하는 값보다 싼" 구간이다.
+    </figcaption>
+    <details class="datatable">
+      <summary>표로 보기 — 차트에 없는 두 줄 포함</summary>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>알고리즘</th><th>N=10</th><th>N=100</th><th>N=1000</th></tr></thead>
+          <tbody>
+            <tr><td><span class="chip a-maglev">maglev M=65537</span></td><td class="num">21.2</td><td class="num">21.5</td><td class="num win">22.5</td></tr>
+            <tr><td><span class="chip a-maglev">maglev M=655373</span></td><td class="num">30.9</td><td class="num">35.2</td><td class="num">37.0</td></tr>
+            <tr><td><span class="chip a-hrw">hrw</span></td><td class="num win">22.7</td><td class="num">211.1</td><td class="num lose">1432.7</td></tr>
+            <tr><td><span class="chip a-jump">jump</span></td><td class="num">31.2</td><td class="num">46.7</td><td class="num">61.2</td></tr>
+            <tr><td><span class="chip a-slot">slot table S=1024</span></td><td class="num">63.0</td><td class="num">62.0</td><td class="num">61.4</td></tr>
+            <tr><td><span class="chip a-ring">ring V=160 (배열)</span></td><td class="num">63.0</td><td class="num">93.2</td><td class="num">143.8</td></tr>
+            <tr><td><span class="chip a-ring">ring V=1000 (배열)</span></td><td class="num">85.8</td><td class="num">122.5</td><td class="num">279.6</td></tr>
+            <tr><td><span class="chip a-ring">ring V=160 (TreeMap)</span></td><td class="num">99.3</td><td class="num">158.4</td><td class="num lose">662.9</td></tr>
+            <tr><td>murmur3_64 키 해시 1회</td><td class="num">—</td><td class="num">—</td><td class="num">33.0</td></tr>
+            <tr><td>ketama MD5 키 해시 1회</td><td class="num">—</td><td class="num">—</td><td class="num">192.3</td></tr>
+          </tbody>
+          <caption>ns/op, JMH 평균. slot table은 조회 비용이 노드 수가 아니라 슬롯 수로 정해져 N과 무관하다.</caption>
+        </table>
+      </div>
+    </details>
+  </figure>
+
+  <div class="col">
+    <h4>예상하지 못한 것 세 가지</h4>
+    <ol>
+      <li>
+        <b>큰 Maglev 테이블은 더 느리다.</b> M=655373은 M=65537보다 65% 느리다(37 ns vs 22 ns).
+        <code>IntArray(655373)</code> = 2.6 MB로 L2 캐시를 넘긴다. 재배치를 줄이려고 M을 키우는 건
+        공짜가 아니라 <b>조회 지연을 사서 재배치를 줄이는 거래</b>다.
+      </li>
+      <li>
+        <b>TreeMap 링은 배열 링보다 N=1000에서 4.6배 느리다</b>(663 ns vs 144 ns).
+        같은 알고리즘, 같은 매핑 결과, 자료구조만 다르다.
+        "안정 해시가 느리다"는 말의 상당 부분은 사실 "TreeMap이 느리다"였다.
+      </li>
+      <li>
+        <b>N이 작으면 알고리즘 선택이 무의미하다.</b> 키 하나 해싱에 33 ns가 든다.
+        N=100에서 Ring(93 ns)과 Maglev(21 ns)의 차이는 키 해싱 두 번 값이다.
+        노드 수십 대짜리 시스템에서 이 표를 근거로 알고리즘을 바꾸는 건 최적화가 아니다.
+      </li>
+    </ol>
+  </div>
+
+  <h3>구축 비용 — 조회만 보면 절반만 본 것이다</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>N=1000</th><th>구축</th><th>노드 1대 추가</th><th>메모리</th></tr></thead>
+      <tbody>
+        <tr><td><span class="chip a-ring">ring V=160</span></td><td class="num">100 ms</td><td class="num">101 ms</td><td class="num">1.94 MB</td></tr>
+        <tr><td><span class="chip a-ring">ring V=1000</span></td><td class="num lose">1,058 ms</td><td class="num lose">1,344 ms</td><td class="num lose">11.6 MB</td></tr>
+        <tr><td><span class="chip a-ring">ketama V=160</span></td><td class="num">389 ms</td><td class="num">377 ms</td><td class="num">1.94 MB</td></tr>
+        <tr><td><span class="chip a-hrw">hrw</span></td><td class="num win">2.1 ms</td><td class="num win">1.2 ms</td><td class="num">0.12 MB</td></tr>
+        <tr><td><span class="chip a-jump">jump</span></td><td class="num win">0.3 ms</td><td class="num">—</td><td class="num win">0.07 MB</td></tr>
+        <tr><td><span class="chip a-maglev">maglev M=65537</span></td><td class="num">8.6 ms</td><td class="num">8.5 ms</td><td class="num">0.36 MB</td></tr>
+        <tr><td><span class="chip a-maglev">maglev M=655373</span></td><td class="num">147 ms</td><td class="num">142 ms</td><td class="num">2.61 MB</td></tr>
+        <tr><td><span class="chip a-slot">slot table S=1024</span></td><td class="num win">0.1 ms</td><td class="num win">0.1 ms</td><td class="num win">0.08 MB</td></tr>
+      </tbody>
+      <caption>
+        V=1000짜리 링은 노드가 한 대 들어올 때마다 1.3초 동안 전체를 다시 만든다.
+        오토스케일링이 잦은 환경에서는 이게 비용이다. Maglev 구축은 N이 아니라 M에 비례한다.
+      </caption>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════ 5. 가설 채점 ══════════ -->
+<section>
+  <div class="sec-head"><span class="sec-num">05</span><h2>가설 채점</h2></div>
+  <div class="col"><p>측정 전에 적고 커밋한 네 문장. 결과는 3승 1무.</p></div>
+
+  <div class="hyp">
+    <div><div class="verdict v-p">부분 기각</div><div class="label">H1 분포</div></div>
+    <div>
+      <h4>“Jump ≈ Maglev &gt; HRW &gt; Ring”</h4>
+      <p>
+        HRW를 아래로 뒀는데 <b>셋은 구별되지 않았다.</b> Jump·HRW·Maglev 모두 잡음 바닥에 붙는다
+        (×0.87 ~ ×1.07). 맞은 건 Ring이 뒤처진다는 것, 그리고 그 열세가 <code>1/√V</code>로 정확히
+        예측된다는 것이다.
+      </p>
+    </div>
+  </div>
+
+  <div class="hyp">
+    <div><div class="verdict v-o">확인</div><div class="label">H2 재배치</div></div>
+    <div>
+      <h4>“Ring·HRW는 이론 최소에 붙고, Maglev만 초과분이 생긴다”</h4>
+      <p>
+        맞았다. 다만 초과분의 정체가 예상과 달랐다. 배수는 N에 따라 ×1.02 → ×6.91로 커지지만,
+        <b>절대 초과분은 0.2~0.6%p에 고정</b>돼 있다. M을 10배 키우면 0.59%p가 0.32%p로 준다.
+      </p>
+    </div>
+  </div>
+
+  <div class="hyp">
+    <div><div class="verdict v-o">확인</div><div class="label">H3 속도</div></div>
+    <div>
+      <h4>“Maglev &gt; Jump &gt; Ring &gt; HRW, HRW만 선형 붕괴”</h4>
+      <p>
+        순서까지 맞았다. 다만 N=10에서는 HRW가 1위라는 것, 큰 Maglev 테이블이 캐시 때문에 더 느리다는 것,
+        TreeMap 구현이 4.6배 느리다는 건 예측에 없었다.
+      </p>
+    </div>
+  </div>
+
+  <div class="hyp">
+    <div><div class="verdict v-o">확인</div><div class="label">H4 운영</div></div>
+    <div>
+      <h4>“임의 노드 제거 + O(1) 조회 + 좋은 분포를 동시에 갖는 건 Maglev뿐”</h4>
+      <p>
+        맞았고, 그 대가가 H2의 초과 재배치다. §1의 매트릭스가 그대로 답이다.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 6. 해석 ══════════ -->
+<section>
+  <div class="sec-head"><span class="sec-num">06</span><h2>그래서 왜 Envoy는 둘 다 주고, Guava는 Jump인가</h2></div>
+
+  <div class="col">
+    <p>여기부터는 기억으로 쓰지 않고 소스를 열어서 확인한 것만 적는다.</p>
+  </div>
+
+  <h3>Envoy는 트레이드오프를 문서에 적어뒀다</h3>
+  <div class="src">
+    <div class="from">envoyproxy/envoy · api/envoy/config/cluster/v3/cluster.proto</div>
+    <blockquote>
+      “The table size for Maglev hashing. Maglev aims for <b>“minimal disruption” rather than an
+      absolute guarantee.</b> … <b>Increasing the table size reduces the amount of disruption.</b>
+      The table size must be prime number limited to 5000011. If it is not specified, the default is 65537.”
+    </blockquote>
+  </div>
+  <div class="col">
+    <p>
+      우리 실험 B가 잰 게 정확히 이 문장의 정량값이다. 같은 파일에서 <code>ring_hash</code>의
+      <code>minimum_ring_size</code>는 기본 1024, 상한 8M이고, 해시는 XX_HASH가 기본이며,
+      주석은 그 링을 <b>“ketama ring”</b>이라 부른다.
+    </p>
+    <p>
+      세션 어피니티가 절대적인 워크로드(장바구니, 로그인 세션)라면 0.6%의 추가 이동이 아프고,
+      그때는 <code>ring_hash</code>다. 초당 수십만 요청을 라우팅하는데 22 ns와 144 ns의 차이가
+      아픈 워크로드라면 <code>maglev</code>다. <b>하나로 통일할 수 없어서 둘 다 있는 것이다.</b>
+    </p>
+  </div>
+
+  <h3>Guava의 consistentHash는 정말 Jump다</h3>
+  <div class="src">
+    <div class="from">google/guava · com/google/common/hash/Hashing.java</div>
+<pre><code>public static int consistentHash(long input, int buckets) {
+  long generatorState = input;
+  int candidate = 0;
+  <span class="cm">// Jump from bucket to bucket until we go out of range</span>
+  while (true) {
+    generatorState = LinearCongruentialGenerator.nextState(generatorState);
+    generated = (int) ((candidate + 1) / LinearCongruentialGenerator.toDouble(generatorState));
+    if (generated >= 0 &amp;&amp; generated &lt; buckets) candidate = generated;
+    else return candidate;
+  }
+}</code></pre>
+  </div>
+  <div class="col">
+    <p>
+      논문의 루프와 형태는 다르지만 같은 알고리즘이다. 테스트가 랜덤 키 20,000개 × 임의 버킷 수에 대해
+      <b>비트 단위로 동일함</b>을 확인한다. 그리고 시그니처를 다시 보라 — <code>(long, int)</code>.
+      노드 목록이 없다. <b>노드를 뺄 방법이 애초에 API에 없다.</b>
+    </p>
+  </div>
+
+  <h3>ketama의 160 포인트는 어디서 왔나</h3>
+  <div class="src">
+    <div class="from">RJ/ketama · libketama/ketama.c</div>
+<pre><code>sprintf( ss, "%s-%d", slist[i].addr, k );
+ketama_md5_digest( ss, digest );
+
+<span class="cm">/* Use successive 4-bytes from hash as numbers
+ * for the points on the circle: */</span>
+for( h = 0; h &lt; 4; h++ ) {
+    continuum[cont].point = ( digest[3+h*4] &lt;&lt; 24 ) | ( digest[2+h*4] &lt;&lt; 16 )
+                          | ( digest[1+h*4] &lt;&lt;  8 ) |   digest[h*4];
+    ...
+}
+<span class="cm">/* 40 hashes, 4 numbers per hash = 160 points per server */</span></code></pre>
+  </div>
+  <div class="col">
+    <p>
+      서버 이름은 <code>"주소-순번"</code>, MD5 다이제스트 하나에서 포인트 4개, 40회 반복.
+      우리 ketama 호환 모드가 이 규칙을 그대로 옮겼다. 재보니 <b>분포 손해는 10% 이내</b>였다
+      (N=1000에서 murmur 링 대비 CV +6~10%). 다이제스트 하나에서 뽑은 4개 포인트가 완전히
+      독립이 아니어서 생기는 차이로 보인다. 호환성 때문에 써야 한다면 걱정할 규모가 아니다.
+      다만 MD5 키 해싱은 <b>192 ns</b>로 murmur3(33 ns)의 6배다 — 라우팅보다 비싸다.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════ 7. 에필로그 ══════════ -->
+<section>
+  <div class="sec-head"><span class="sec-num">07</span><h2>에필로그 — Redis Cluster의 16384 슬롯은 넷 중 아무것도 아니다</h2></div>
+
+  <div class="col">
+    <p>Jump의 한계를 우회하는 방법이 하나 있다. 2단으로 나누는 것이다.</p>
+  </div>
+
+  <pre class="col"><code>key ──(Jump, 고정)──▶ 논리 슬롯 0..S-1 ──(가변 배정표)──▶ 물리 노드</code></pre>
+
+  <div class="col">
+    <p>
+      1단은 상태 없는 순수 함수라 절대 안 변한다. 2단은 그냥 배열이라 “3번 노드 빼기”가 자유롭고,
+      옮길 슬롯을 우리가 직접 고르므로 최소 재배치다. 실측에서도 <b>재배치 ×0.93, 조회 61 ns(N과 무관),
+      구축 0.1 ms</b>로 거의 모든 칸이 이상적이었다. 공짜 점심인가?
+    </p>
+    <p>아니다. 분포를 보면 값을 치른 게 보인다.</p>
+  </div>
+
+  <div class="tablewrap col">
+    <table>
+      <thead><tr><th>N (슬롯 S=1024)</th><th>CV</th><th>peak / mean</th></tr></thead>
+      <tbody>
+        <tr><td class="num">10</td><td class="num">0.40 %</td><td class="num">1.005</td></tr>
+        <tr><td class="num">100</td><td class="num">4.44 %</td><td class="num">1.101</td></tr>
+        <tr><td class="num">1000</td><td class="num lose">15.23 %</td><td class="num lose">2.020</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="col">
+    <p>
+      N=1000에 슬롯이 1024개면 어떤 노드는 슬롯 2개, 어떤 노드는 1개를 받는다. 그대로 2배 불균형이다.
+      <b>슬롯 방식의 균형 한계는 “노드당 슬롯 수”가 정한다.</b> Redis가 16384를 고른 것도 이 산수다 —
+      1000노드에서 노드당 16슬롯이면 불균형 상한이 6% 수준에 잡힌다.
+    </p>
+  </div>
+
+  <div class="src">
+    <div class="from">redis/redis · src/cluster.h</div>
+<pre><code>#define CLUSTER_SLOT_MASK_BITS 14
+#define CLUSTER_SLOTS (1&lt;&lt;CLUSTER_SLOT_MASK_BITS)  <span class="cm">/* 16384 */</span>
+
+<span class="cm">/* We have 16384 hash slots. The hash slot of a given key is obtained
+ * as the least significant 14 bits of the crc16 of the key. */</span>
+if (likely(s == keylen)) return crc16(key,keylen) &amp; 0x3FFF;</code></pre>
+  </div>
+
+  <div class="col">
+    <p>
+      그리고 진짜 대가는 숫자로 안 나오는 쪽에 있다. <b>배정표를 누군가 관리해야 한다.</b>
+      Ring·HRW·Maglev는 멤버십만 알면 모든 노드가 독립적으로 같은 답을 계산한다 — 무상태 합의다.
+      슬롯 방식은 배정표 자체가 클러스터 전체가 합의해야 하는 상태다.
+      Redis Cluster에 클러스터 버스와 gossip 프로토콜이 있는 이유가 그거다.
+    </p>
+  </div>
+
+  <div class="thesis col">
+    안정 해시를 <b>“안 쓰는”</b> 시스템이 아니라, 그 문제를 <b>다른 층위에서 푸는</b> 시스템이다.<br>
+    <span style="font-size:.86rem; font-family:var(--font-body); color:var(--ink-2); display:block; margin-top:.7rem; line-height:1.6">
+      해시 함수로 풀면 무상태지만 배치를 제어할 수 없고, 배정표로 풀면 배치를 완전히 제어하지만 그 표를 합의해야 한다.
+    </span>
+  </div>
+</section>
+
+<!-- ══════════ 8. 선택 가이드 ══════════ -->
+<section>
+  <div class="sec-head"><span class="sec-num">08</span><h2>선택 가이드</h2></div>
+
+  <div class="guide">
+    <div class="guide-row" style="--dot:var(--ring)">
+      <span class="when">노드 수십 대, 세션 어피니티가 중요</span>
+      <span class="chip a-ring">Ring (V≥160)</span>
+      <span class="why">알고리즘 차이가 키 해싱 비용에 묻힌다. 검증된 구현이 어디에나 있다.</span>
+    </div>
+    <div class="guide-row" style="--dot:var(--ring)">
+      <span class="when">memcached 클라이언트 호환이 필요</span>
+      <span class="chip a-ring">Ketama (160점)</span>
+      <span class="why">분포 손해는 10% 이내. 대신 MD5 키 해싱 192 ns를 감수한다.</span>
+    </div>
+    <div class="guide-row" style="--dot:var(--hrw)">
+      <span class="when">노드 수십 대 이하, 가중치가 자주 바뀜</span>
+      <span class="chip a-hrw">Rendezvous</span>
+      <span class="why">N=10에서 제일 빠르고, 상태가 없고, 가중치가 자연스럽다.</span>
+    </div>
+    <div class="guide-row" style="--dot:var(--maglev)">
+      <span class="when">노드 수백~수천, L4/L7 로드밸런서</span>
+      <span class="chip a-maglev">Maglev</span>
+      <span class="why">22 ns 고정. 초과 재배치 0.6%를 감당할 수 있다면.</span>
+    </div>
+    <div class="guide-row" style="--dot:var(--jump)">
+      <span class="when">샤드 개수가 정책적으로만 바뀌는 저장소</span>
+      <span class="chip a-jump">Jump</span>
+      <span class="why">상태 0, 분포 완벽. 단 노드는 끝에서만 들고 난다.</span>
+    </div>
+    <div class="guide-row" style="--dot:var(--slot)">
+      <span class="when">배치를 직접 제어해야 함 (핫키 격리, 점진 마이그레이션)</span>
+      <span class="chip a-slot">슬롯 테이블</span>
+      <span class="why">대신 배정표를 합의·전파할 인프라가 필요하다.</span>
+    </div>
+    <div class="guide-row warn-row">
+      <span class="when"><b>노드가 죽는 로드밸런서</b></span>
+      <span class="chip a-jump" style="color:var(--crit)">Jump는 절대 안 됨</span>
+      <span class="why">가운데 노드 하나에 키의 39~54%가 이사한다.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 재현 ══════════ -->
+<section>
+  <div class="sec-head"><span class="sec-num">09</span><h2>재현</h2></div>
+  <div class="col">
+    <p>코드와 원자료는 <code>consistentHashLab/</code>에 있다. 테스트 이름이 곧 주장이다.</p>
+  </div>
+  <pre class="col"><code>mvn -f consistentHashLab/pom.xml test        <span class="cm"># 성질 테스트 23개</span>
+mvn -f consistentHashLab/pom.xml exec:java   <span class="cm"># 실험 A/B/D → results/*.csv</span>
+
+<span class="cm"># 실험 C (JMH)</span>
+java -cp "target/classes:$(cat target/cp.txt)" org.openjdk.jmh.Main \
+  -rf csv -rff results/c_speed.csv</code></pre>
+
+  <pre class="col"><code><span class="cm">DisruptionTest</span>
+  ✓ ring: removing a node moves only that node's keys
+  ✓ rendezvous: removing a node moves only that node's keys
+  ✓ slot table: removing a node moves only that node's slots
+  ✓ maglev: removing a node ALSO moves keys that had nothing to do with it
+  ✓ maglev: a bigger table shrinks the collateral damage
+<span class="cm">JumpHashTest</span>
+  ✓ Guava's Hashing.consistentHash IS Jump - our implementation agrees bit for bit
+  ✓ growing N to N+1 moves keys ONLY into the new bucket
+  ✓ unsigned shift matters: using shr instead of ushr collapses the distribution
+  ✓ distribution is indistinguishable from a perfectly random assignment
+  ✓ Jump cannot remove an arbitrary node - only the last bucket</code></pre>
+
+  <footer>
+    <p>
+      원자료 <code>results/a_distribution.csv</code> · <code>b_rebalance.csv</code> ·
+      <code>c_speed.csv</code> · <code>d_cost.csv</code> — long format
+      <code>experiment,algorithm,nodes,param,keyset,metric,value</code>.
+      오픈소스 대조는 <code>SOURCES.md</code>(원문 인용 포함, 확인일 2026-08-18),
+      가설 채점 전문은 <code>FINDINGS.md</code>.
+    </p>
+    <p>
+      벤치마크는 컨테이너 1대에서 fork 1회로 측정했다. 절대값은 환경에 따라 달라지지만,
+      <b>알고리즘 간 상대 관계와 N에 따른 기울기</b>가 이 글의 주장이다.
+    </p>
+  </footer>
+</section>
+
+</div>
+
+<div id="tip" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  const tip = document.getElementById('tip');
+  // SVG 마크는 반경 4px라 그대로는 못 짚는다. 투명한 큰 원을 겹쳐서 히트 영역을 넓힌다.
+  document.querySelectorAll('svg circle[data-tip]').forEach(function (dot) {
+    const hit = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    hit.setAttribute('class', 'hit');
+    hit.setAttribute('cx', dot.getAttribute('cx'));
+    hit.setAttribute('cy', dot.getAttribute('cy'));
+    hit.setAttribute('r', '13');
+    hit.setAttribute('fill', 'transparent');
+    hit.setAttribute('data-tip', dot.getAttribute('data-tip'));
+    dot.parentNode.appendChild(hit);
+  });
+
+  function show(e) {
+    const t = e.target.closest('[data-tip]');
+    if (!t) return;
+    tip.textContent = t.getAttribute('data-tip');
+    tip.classList.add('on');
+    move(e);
+  }
+  function move(e) {
+    const x = e.touches ? e.touches[0].clientX : e.clientX;
+    const y = e.touches ? e.touches[0].clientY : e.clientY;
+    tip.style.left = Math.min(Math.max(x, 90), window.innerWidth - 90) + 'px';
+    tip.style.top = y + 'px';
+  }
+  function hide() { tip.classList.remove('on'); }
+
+  document.addEventListener('pointerover', show);
+  document.addEventListener('pointermove', function (e) { if (tip.classList.contains('on')) move(e); });
+  document.addEventListener('pointerout', function (e) {
+    if (e.target.closest('[data-tip]')) hide();
+  });
+  window.addEventListener('scroll', hide, { passive: true });
+})();
+</script>

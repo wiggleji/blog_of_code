@@ -37,8 +37,12 @@ mvn -f consistentHashLab/pom.xml test        # 성질 테스트 23개
 mvn -f consistentHashLab/pom.xml exec:java   # 실험 A/B/D → results/*.csv
 ```
 
-실험 C(JMH) 및 결과 해석은 [CLAUDE.md](CLAUDE.md), 오픈소스 대조는 [SOURCES.md](SOURCES.md),
-가설 O/X와 결론은 [FINDINGS.md](FINDINGS.md) 참고.
+| 문서 | 내용 |
+|---|---|
+| [FINDINGS.md](FINDINGS.md) | 가설 4개 채점, 실측 해석, 선택 가이드 |
+| [SOURCES.md](SOURCES.md) | 오픈소스 대조 (Guava·libketama·Envoy·Cassandra·Redis 원문 인용) |
+| [CLAUDE.md](CLAUDE.md) | 랩 규칙과 실행 방법 |
+| [report.html](report.html) | 포스팅용 정리본 (아티팩트로 발행한 것과 동일) |
 
 ## 테스트가 곧 주장이다
 
